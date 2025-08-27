@@ -899,6 +899,10 @@ public partial class ScmShop
 
     public virtual ProductProduct? GiftProduct { get; set; }
 
+    public virtual ResPartner? PanariaPartnerNavigation { get; set; }
+
+    public virtual ResPartner Partner { get; set; } = null!;
+
     public virtual ProductProduct? PikupProduct { get; set; }
 
     public virtual ScmTill? PrepaidTillNavigation { get; set; }

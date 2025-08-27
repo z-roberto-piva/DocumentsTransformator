@@ -26,6 +26,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<ProductUom> ProductUoms { get; set; }
 
+    public virtual DbSet<ResPartner> ResPartners { get; set; }
+
     public virtual DbSet<ScmReceiptAgreement> ScmReceiptAgreements { get; set; }
 
     public virtual DbSet<ScmReceiptAnalyticItem> ScmReceiptAnalyticItems { get; set; }
@@ -836,6 +838,452 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.WriteUid).HasColumnName("write_uid");
         });
 
+        modelBuilder.Entity<ResPartner>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("res_partner_pkey");
+
+            entity.ToTable("res_partner");
+
+            entity.HasIndex(e => e.CardCode, "res_partner_card_code_index");
+
+            entity.HasIndex(e => e.CardCode, "res_partner_card_code_uniq").IsUnique();
+
+            entity.HasIndex(e => e.Code, "res_partner_code_index");
+
+            entity.HasIndex(e => e.Code, "res_partner_code_uniq").IsUnique();
+
+            entity.HasIndex(e => e.CompanyId, "res_partner_company_id_index");
+
+            entity.HasIndex(e => e.Date, "res_partner_date_index");
+
+            entity.HasIndex(e => e.Name, "res_partner_name_index");
+
+            entity.HasIndex(e => e.ParentId, "res_partner_parent_id_index");
+
+            entity.HasIndex(e => new { e.ReaCode, e.CompanyId }, "res_partner_rea_code_uniq").IsUnique();
+
+            entity.HasIndex(e => e.Ref, "res_partner_ref_index");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.AcceptedPrivacyPolicy)
+                .HasComment("Accepted privacy policy")
+                .HasColumnName("accepted_privacy_policy");
+            entity.Property(e => e.AcceptedTermsAndConditions)
+                .HasComment("Accepted terms and conditions")
+                .HasColumnName("accepted_terms_and_conditions");
+            entity.Property(e => e.Active)
+                .HasComment("Active")
+                .HasColumnName("active");
+            entity.Property(e => e.Aggio)
+                .HasComment("Aggio Percentage")
+                .HasColumnName("aggio");
+            entity.Property(e => e.Birthdate)
+                .HasMaxLength(64)
+                .HasComment("Birthdate")
+                .HasColumnName("birthdate");
+            entity.Property(e => e.CardCode)
+                .HasMaxLength(64)
+                .HasColumnName("card_code");
+            entity.Property(e => e.CardExpirationDate)
+                .HasComment("Card Expiration Date")
+                .HasColumnName("card_expiration_date");
+            entity.Property(e => e.CardPin)
+                .HasMaxLength(20)
+                .HasComment("Pin Card")
+                .HasColumnName("card_pin");
+            entity.Property(e => e.CarriageConditionId)
+                .HasComment("Carriage condition")
+                .HasColumnName("carriage_condition_id");
+            entity.Property(e => e.CashBalance)
+                .HasComment("Cash Balance")
+                .HasColumnName("cash_balance");
+            entity.Property(e => e.City)
+                .HasMaxLength(128)
+                .HasComment("City")
+                .HasColumnName("city");
+            entity.Property(e => e.Code)
+                .HasMaxLength(64)
+                .HasComment("Code")
+                .HasColumnName("code");
+            entity.Property(e => e.CodiceDestinatario)
+                .HasComment("Codice Destinatario")
+                .HasColumnType("character varying")
+                .HasColumnName("codice_destinatario");
+            entity.Property(e => e.Color)
+                .HasComment("Color Index")
+                .HasColumnName("color");
+            entity.Property(e => e.Comment)
+                .HasComment("Notes")
+                .HasColumnName("comment");
+            entity.Property(e => e.CompanyId).HasColumnName("company_id");
+            entity.Property(e => e.CompletedPersonalData)
+                .HasComment("Completed Personal Data")
+                .HasColumnName("completed_personal_data");
+            entity.Property(e => e.CountryId)
+                .HasComment("Country")
+                .HasColumnName("country_id");
+            entity.Property(e => e.CreateDate)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("create_date");
+            entity.Property(e => e.CreateUid).HasColumnName("create_uid");
+            entity.Property(e => e.CreditLimit)
+                .HasComment("Credit Limit")
+                .HasColumnName("credit_limit");
+            entity.Property(e => e.CurrentPointsBalance)
+                .HasComment("Current Points Balance")
+                .HasColumnName("current_points_balance");
+            entity.Property(e => e.Customer)
+                .HasComment("Customer")
+                .HasColumnName("customer");
+            entity.Property(e => e.CustomerNote)
+                .HasComment("Customer Note")
+                .HasColumnName("customer_note");
+            entity.Property(e => e.Date)
+                .HasComment("Date")
+                .HasColumnName("date");
+            entity.Property(e => e.DateOfBirth)
+                .HasComment("Date Of Birth")
+                .HasColumnName("date_of_birth");
+            entity.Property(e => e.DebitLimit)
+                .HasComment("Payable Limit")
+                .HasColumnName("debit_limit");
+            entity.Property(e => e.DisplayName)
+                .HasComment("Name")
+                .HasColumnType("character varying")
+                .HasColumnName("display_name");
+            entity.Property(e => e.Ean13)
+                .HasMaxLength(13)
+                .HasComment("EAN13")
+                .HasColumnName("ean13");
+            entity.Property(e => e.ElectronicInvoiceDataComplete)
+                .HasComment("unknown")
+                .HasColumnName("electronic_invoice_data_complete");
+            entity.Property(e => e.ElectronicInvoiceNoContactUpdate)
+                .HasComment("Do not update the contact from Electronic Invoice Details")
+                .HasColumnName("electronic_invoice_no_contact_update");
+            entity.Property(e => e.ElectronicInvoiceObligedSubject)
+                .HasComment("Obliged Subject")
+                .HasColumnName("electronic_invoice_obliged_subject");
+            entity.Property(e => e.ElectronicInvoiceSubjected)
+                .HasComment("Subjected to electronic invoice")
+                .HasColumnName("electronic_invoice_subjected");
+            entity.Property(e => e.ElectronicInvoiceUseThisAddress)
+                .HasComment("Use this e-invoicing data when invoicing to this address")
+                .HasColumnName("electronic_invoice_use_this_address");
+            entity.Property(e => e.Email)
+                .HasMaxLength(240)
+                .HasComment("Email")
+                .HasColumnName("email");
+            entity.Property(e => e.Employee)
+                .HasComment("Employee")
+                .HasColumnName("employee");
+            entity.Property(e => e.EntranceBonusEarned)
+                .HasComment("Entrance Bonus Earned")
+                .HasColumnName("entrance_bonus_earned");
+            entity.Property(e => e.EoriCode)
+                .HasMaxLength(20)
+                .HasComment("EORI Code")
+                .HasColumnName("eori_code");
+            entity.Property(e => e.ExternalEmployeeCode)
+                .HasComment("External Employee Code")
+                .HasColumnType("character varying")
+                .HasColumnName("external_employee_code");
+            entity.Property(e => e.Fax)
+                .HasMaxLength(64)
+                .HasComment("Fax")
+                .HasColumnName("fax");
+            entity.Property(e => e.Firstname)
+                .HasComment("Firstname")
+                .HasColumnType("character varying")
+                .HasColumnName("firstname");
+            entity.Property(e => e.Fiscalcode)
+                .HasMaxLength(16)
+                .HasComment("Fiscal Code")
+                .HasColumnName("fiscalcode");
+            entity.Property(e => e.Function)
+                .HasMaxLength(128)
+                .HasComment("Job Position")
+                .HasColumnName("function");
+            entity.Property(e => e.GiftCardExpirationDate)
+                .HasComment("Gift Card Expiration Date")
+                .HasColumnName("gift_card_expiration_date");
+            entity.Property(e => e.GoodsDescriptionId)
+                .HasComment("Description of goods")
+                .HasColumnName("goods_description_id");
+            entity.Property(e => e.GrandTotalConsumedPointsBalance)
+                .HasComment("Total Points Consumed")
+                .HasColumnName("grand_total_consumed_points_balance");
+            entity.Property(e => e.GrandTotalPointsBalance)
+                .HasComment("Total Points Accumulated")
+                .HasColumnName("grand_total_points_balance");
+            entity.Property(e => e.IgnoreNotDiscountableFlag)
+                .HasComment("Ignore Not Discountable Flag")
+                .HasColumnName("ignore_not_discountable_flag");
+            entity.Property(e => e.Image)
+                .HasComment("Image")
+                .HasColumnName("image");
+            entity.Property(e => e.ImageMedium)
+                .HasComment("Medium-sized image")
+                .HasColumnName("image_medium");
+            entity.Property(e => e.ImageSmall)
+                .HasComment("Small-sized image")
+                .HasColumnName("image_small");
+            entity.Property(e => e.InFiscalDocumentType)
+                .HasComment("In Fiscal Document Type")
+                .HasColumnName("in_fiscal_document_type");
+            entity.Property(e => e.Individual)
+                .HasComment("Individual")
+                .HasColumnName("individual");
+            entity.Property(e => e.InvoiceRequest)
+                .HasComment("Invoice Request")
+                .HasColumnName("invoice_request");
+            entity.Property(e => e.IpaCode)
+                .HasMaxLength(128)
+                .HasComment("IPA Code")
+                .HasColumnName("ipa_code");
+            entity.Property(e => e.IsCompany)
+                .HasComment("Is a Company")
+                .HasColumnName("is_company");
+            entity.Property(e => e.IsEmployeeCard)
+                .HasComment("Card of Employee")
+                .HasColumnName("isEmployeeCard");
+            entity.Property(e => e.IsLoyalty)
+                .HasComment("Loyalty Enabled")
+                .HasColumnName("is_loyalty");
+            entity.Property(e => e.IsManual)
+                .HasComment("Is Manual")
+                .HasColumnName("is_manual");
+            entity.Property(e => e.IsMultiuseCard)
+                .HasComment("Is Multiuse Card")
+                .HasColumnName("is_multiuse_card");
+            entity.Property(e => e.IsPa)
+                .HasComment("Public administration")
+                .HasColumnName("is_pa");
+            entity.Property(e => e.IsPrepaidOnDb)
+                .HasComment("Is Prepaid On DB")
+                .HasColumnName("is_prepaid_on_db");
+            entity.Property(e => e.IsTobaccoReseller)
+                .HasComment("Is Tobacco Reseller")
+                .HasColumnName("is_tobacco_reseller");
+            entity.Property(e => e.IsTobaccoSupplier)
+                .HasComment("Is Tobacco Supplyer")
+                .HasColumnName("is_tobacco_supplier");
+            entity.Property(e => e.Lang)
+                .HasMaxLength(64)
+                .HasColumnName("lang");
+            entity.Property(e => e.LastBalancesRectification)
+                .HasComment("Last Balances Rectification")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("last_balances_rectification");
+            entity.Property(e => e.LastCardUsage)
+                .HasComment("Last Card Usage")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("last_card_usage");
+            entity.Property(e => e.LastPrepaidUsage)
+                .HasComment("Last Prepaid Usage")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("last_prepaid_usage");
+            entity.Property(e => e.LastReconciliationDate)
+                .HasComment("Latest Full Reconciliation Date")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("last_reconciliation_date");
+            entity.Property(e => e.Lastname)
+                .HasComment("Lastname")
+                .HasColumnType("character varying")
+                .HasColumnName("lastname");
+            entity.Property(e => e.LicenseNumber)
+                .HasMaxLength(20)
+                .HasComment("License Code")
+                .HasColumnName("license_number");
+            entity.Property(e => e.LotteryCode)
+                .HasComment("Lottery Code")
+                .HasColumnType("character varying")
+                .HasColumnName("lottery_code");
+            entity.Property(e => e.Mobile)
+                .HasMaxLength(64)
+                .HasComment("Mobile")
+                .HasColumnName("mobile");
+            entity.Property(e => e.Name)
+                .HasColumnType("character varying")
+                .HasColumnName("name");
+            entity.Property(e => e.NotificationEmailSend)
+                .HasComment("Receive Messages by Email")
+                .HasColumnType("character varying")
+                .HasColumnName("notification_email_send");
+            entity.Property(e => e.NumRivendita)
+                .HasComment("Numero rivendita")
+                .HasColumnName("num_rivendita");
+            entity.Property(e => e.OnlyPrepaidCard)
+                .HasComment("Only Prepaid Card")
+                .HasColumnName("only_prepaid_card");
+            entity.Property(e => e.OptOut)
+                .HasComment("Opt-Out")
+                .HasColumnName("opt_out");
+            entity.Property(e => e.OutFiscalDocumentType)
+                .HasComment("Out Fiscal Document Type")
+                .HasColumnName("out_fiscal_document_type");
+            entity.Property(e => e.OverridePrepaidPayment)
+                .HasComment("Override Prepaid Payment")
+                .HasColumnName("override_prepaid_payment");
+            entity.Property(e => e.PaPartnerCode)
+                .HasMaxLength(20)
+                .HasComment("PA Code for partner")
+                .HasColumnName("pa_partner_code");
+            entity.Property(e => e.ParentId)
+                .HasComment("Related Company")
+                .HasColumnName("parent_id");
+            entity.Property(e => e.PecDestinatario)
+                .HasComment("PEC destinatario")
+                .HasColumnType("character varying")
+                .HasColumnName("pec_destinatario");
+            entity.Property(e => e.Phone)
+                .HasMaxLength(64)
+                .HasComment("Phone")
+                .HasColumnName("phone");
+            entity.Property(e => e.PosBalance)
+                .HasComment("Pos/EFT Balance")
+                .HasColumnName("pos_balance");
+            entity.Property(e => e.PrepaidCreditAmount)
+                .HasComment("Max Prepaid On DB Credit")
+                .HasColumnName("prepaid_credit_amount");
+            entity.Property(e => e.PrepaidCreditAmountUsed)
+                .HasComment("Prepaid On DB Credit Used")
+                .HasColumnName("prepaid_credit_amount_used");
+            entity.Property(e => e.PrepaidOnDbBalance)
+                .HasComment("Prepaid On DB Balance")
+                .HasColumnName("prepaid_on_db_balance");
+            entity.Property(e => e.PricelistId)
+                .HasComment("Pricelist")
+                .HasColumnName("pricelist_id");
+            entity.Property(e => e.Province)
+                .HasComment("Province")
+                .HasColumnName("province");
+            entity.Property(e => e.ReaCapital)
+                .HasComment("Capital")
+                .HasColumnName("rea_capital");
+            entity.Property(e => e.ReaCode)
+                .HasMaxLength(20)
+                .HasComment("REA Code")
+                .HasColumnName("rea_code");
+            entity.Property(e => e.ReaLiquidationState)
+                .HasComment("Liquidation State")
+                .HasColumnType("character varying")
+                .HasColumnName("rea_liquidation_state");
+            entity.Property(e => e.ReaMemberType)
+                .HasComment("Member Type")
+                .HasColumnType("character varying")
+                .HasColumnName("rea_member_type");
+            entity.Property(e => e.ReaOffice)
+                .HasComment("Office Province")
+                .HasColumnName("rea_office");
+            entity.Property(e => e.RechargeVatRate)
+                .HasComment("Recharge Vat Rate")
+                .HasColumnName("recharge_vat_rate");
+            entity.Property(e => e.Ref)
+                .HasMaxLength(64)
+                .HasComment("Reference")
+                .HasColumnName("ref");
+            entity.Property(e => e.Region)
+                .HasComment("Region")
+                .HasColumnName("region");
+            entity.Property(e => e.Register)
+                .HasMaxLength(60)
+                .HasComment("Professional Register")
+                .HasColumnName("register");
+            entity.Property(e => e.RegisterCode)
+                .HasMaxLength(60)
+                .HasComment("Register Code")
+                .HasColumnName("register_code");
+            entity.Property(e => e.RegisterFiscalpos)
+                .HasComment("Register Fiscal Position")
+                .HasColumnName("register_fiscalpos");
+            entity.Property(e => e.RegisterProvince)
+                .HasComment("Register Province")
+                .HasColumnName("register_province");
+            entity.Property(e => e.RegisterRegdate)
+                .HasComment("Register Registration Date")
+                .HasColumnName("register_regdate");
+            entity.Property(e => e.RevaluationBalance)
+                .HasComment("Revaluation Balance")
+                .HasColumnName("revaluation_balance");
+            entity.Property(e => e.SignupExpiration)
+                .HasComment("Signup Expiration")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("signup_expiration");
+            entity.Property(e => e.SignupToken)
+                .HasComment("Signup Token")
+                .HasColumnType("character varying")
+                .HasColumnName("signup_token");
+            entity.Property(e => e.SignupType)
+                .HasComment("Signup Token Type")
+                .HasColumnType("character varying")
+                .HasColumnName("signup_type");
+            entity.Property(e => e.SmartBillActive)
+                .HasComment("Smart Bill Active")
+                .HasColumnName("smart_bill_active");
+            entity.Property(e => e.StateId)
+                .HasComment("State")
+                .HasColumnName("state_id");
+            entity.Property(e => e.Street)
+                .HasMaxLength(128)
+                .HasComment("Street")
+                .HasColumnName("street");
+            entity.Property(e => e.Street2)
+                .HasMaxLength(128)
+                .HasComment("Street2")
+                .HasColumnName("street2");
+            entity.Property(e => e.Supplier)
+                .HasComment("Supplier")
+                .HasColumnName("supplier");
+            entity.Property(e => e.TicketBalance)
+                .HasComment("Ticket Balance")
+                .HasColumnName("ticket_balance");
+            entity.Property(e => e.Title)
+                .HasComment("Title")
+                .HasColumnName("title");
+            entity.Property(e => e.TransportationReasonId)
+                .HasComment("Reason for transportation")
+                .HasColumnName("transportation_reason_id");
+            entity.Property(e => e.Type)
+                .HasComment("Address Type")
+                .HasColumnType("character varying")
+                .HasColumnName("type");
+            entity.Property(e => e.Tz)
+                .HasMaxLength(64)
+                .HasComment("Timezone")
+                .HasColumnName("tz");
+            entity.Property(e => e.UseParentAddress)
+                .HasComment("Use Company Address")
+                .HasColumnName("use_parent_address");
+            entity.Property(e => e.UserId)
+                .HasComment("Salesperson")
+                .HasColumnName("user_id");
+            entity.Property(e => e.Vat)
+                .HasMaxLength(32)
+                .HasComment("TIN")
+                .HasColumnName("vat");
+            entity.Property(e => e.VatSubjected)
+                .HasComment("VAT Legal Statement")
+                .HasColumnName("vat_subjected");
+            entity.Property(e => e.Website)
+                .HasMaxLength(64)
+                .HasComment("Website")
+                .HasColumnName("website");
+            entity.Property(e => e.WriteDate)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("write_date");
+            entity.Property(e => e.WriteUid).HasColumnName("write_uid");
+            entity.Property(e => e.Zip)
+                .HasMaxLength(24)
+                .HasComment("Zip")
+                .HasColumnName("zip");
+
+            entity.HasOne(d => d.Parent).WithMany(p => p.InverseParent)
+                .HasForeignKey(d => d.ParentId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("res_partner_parent_id_fkey");
+        });
+
         modelBuilder.Entity<ScmReceiptAgreement>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("scm_receipt_agreements_pkey");
@@ -1465,6 +1913,11 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.ParentTransactionId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("scm_receipt_headers_parent_transaction_id_fkey");
+
+            entity.HasOne(d => d.Partner).WithMany(p => p.ScmReceiptHeaders)
+                .HasForeignKey(d => d.PartnerId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("scm_receipt_headers_partner_id_fkey");
 
             entity.HasOne(d => d.ReversalTransaction).WithMany(p => p.InverseReversalTransaction)
                 .HasForeignKey(d => d.ReversalTransactionId)
@@ -2934,6 +3387,16 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.GiftProductId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("scm_shops_gift_product_id_fkey");
+
+            entity.HasOne(d => d.PanariaPartnerNavigation).WithMany(p => p.ScmShopPanariaPartnerNavigations)
+                .HasForeignKey(d => d.PanariaPartner)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("scm_shops_panaria_partner_fkey");
+
+            entity.HasOne(d => d.Partner).WithMany(p => p.ScmShopPartners)
+                .HasForeignKey(d => d.PartnerId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_shops_partner_id_fkey");
 
             entity.HasOne(d => d.PikupProduct).WithMany(p => p.ScmShopPikupProducts)
                 .HasForeignKey(d => d.PikupProductId)

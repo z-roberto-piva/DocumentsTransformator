@@ -417,6 +417,8 @@ public partial class ScmReceiptHeader
 
     public virtual ScmReceiptHeader? ParentTransaction { get; set; }
 
+    public virtual ResPartner? Partner { get; set; }
+
     public virtual ScmReceiptHeader? ReversalTransaction { get; set; }
 
     public virtual ScmReceiptHeader? ReversedTransaction { get; set; }

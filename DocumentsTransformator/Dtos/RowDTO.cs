@@ -1,5 +1,56 @@
 namespace DocumentsTransformator.Dtos;
 
 public sealed record RowDto(
-    int Id
+      int Id
+    , string? CategoryCode
+    , int? VatCodeId
+    , decimal? Qty
+    , string? WaiterUserCode
+    , string? ItemDate
+    , decimal? DiscountRate
+    , int? HeaderId
+    , string? ProductCode
+    , decimal? FiscalNetAmount
+    , decimal? FiscalAmount
+    , decimal? UnitPrice
+    , string? GiftCode
+    , string? State
+    , int? Score
+    , string? SerialNumber
+    , string? ItemTime
+    , int? WaiterId
+    , bool? Discountable
+    , string? Description
+    , DateTime? ItemDatetime
+    , String? Barcode
+    , string? VatCode
+    , string? Reason
+    , decimal? DiscountFromTotal
+    , string? MixmatchCode
+    , decimal? DiscountAmount
+    , string? ProductType
+    , int? ProductId
+    , string? MessageText
+    , decimal? Amount
+    , decimal? VatRate
+    , decimal? NetAmount
+    , double? Weight
+    , string? FatherProduct
+    , int? FatherProductId
+    , int? PriceListId
+    , string? PriceList
+    , int? ConsumedPoints
+    , decimal? ItemRealPrice
+    , decimal? ItemRealPriceFiscalNet
+    , decimal? ItemInmenuPrice
+    , decimal? ItemMenuPrice
+    , decimal? ItemMenuPriceFiscalNet
+    , decimal? ItemInmenuPriceFiscalNet
+    , bool? ItemNotPrintable
+    , string? SuspensionTime
+    , string? ItemWineemotionBarcode
+    , int? DiscountOnRowId
+    , string? ItemPromoLabel
+    , int? ItemPromoId
+    , int? ItemTillId
 );
