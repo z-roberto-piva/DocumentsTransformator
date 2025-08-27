@@ -27,7 +27,7 @@ public sealed record DocumentDTO(
     string? HallCode,
     int? NumberOfItems,
     int? CoverChargeQty,
-    DateOnly? BookkeepingDate,
+    DateTime? BookkeepingDate,
     string? CashierUserCode,
     int? ReversalTransactionId,
     string? ReferenceReceipt,

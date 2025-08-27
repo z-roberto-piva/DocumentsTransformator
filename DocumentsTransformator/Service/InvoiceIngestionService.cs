@@ -13,6 +13,7 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
     private readonly IOpenSearchClient _os = os;
     private readonly string _index = cfg["OpenSearch:Index"] ?? "invoices";
     private readonly int _batchSize = int.TryParse(cfg["BatchSize"], out var b) ? b : 2000;
+    private readonly int? maxRecords = int.TryParse(cfg["MaxNumberOfDocuments"], out var m) ? m : null;
 
     public async Task RunAsync(CancellationToken ct = default)
     {
@@ -23,173 +24,178 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
 
         for (int skip = 0; skip < total; skip += _batchSize)
         {
+            if (maxRecords.HasValue && skip >= maxRecords.Value)
+            {
+                Console.WriteLine($"[Invoices] Limite massimo di documenti ({maxRecords.Value}) raggiunto. Interrompo l'elaborazione.");
+                break;
+            }
             var chunk = await _db.ScmReceiptHeaders
                 .AsNoTracking()
                 .OrderBy(i => i.Id)
                 .Skip(skip).Take(_batchSize)
                 .Select(i => new DocumentDTO(
-                      Id: i.Id
-                    , ReceiptRealDatetime: i.ReceiptRealDatetime
-                    , TillCode: i.TillCode
-                    , CancelUserId: i.CancelUserId
-                    , Canceled: i.Canceled
-                    , ShopId: i.ShopId
-                    , CashierId: i.CashierId
-                    , TillId: i.TillId
-                    , Total: i.Total
-                    , PartnerId: i.PartnerId
-                    , ReceiptDate: i.ReceiptDate
-                    , IsReversal: i.IsReversal
-                    , ReceiptTime: i.ReceiptTime
-                    , ReversedTransactionId: i.ReversedTransactionId
-                    , ShopCode: i.ShopCode
-                    , FiscalNumber: i.FiscalNumber
-                    , TransactionNumber: i.TransactionNumber
-                    , Reason: i.Reason
-                    , PartnerAnomaly: i.PartnerAnomaly
-                    , InvoiceNumber: i.InvoiceNumber
-                    , HallCode: i.HallCode
-                    , NumberOfItems: i.NumberOfItems
-                    , CoverChargeQty: i.CoverChargeQty
-                    , BookkeepingDate: i.BookkeepingDate
-                    , CashierUserCode: i.CashierUserCode
-                    , ReversalTransactionId: i.ReversalTransactionId
-                    , ReferenceReceipt: i.ReferenceReceipt
-                    , CancelDate: i.CancelDate
-                    , CustomerNumber: i.CustomerNumber
-                    , TableCode: i.TableCode
-                    , ReceiptDatetime: i.ReceiptDatetime
-                    , ServiceId: i.ServiceId
-                    , Provenience: i.Provenience
-                    , CompanyCurrencyId: i.CompanyCurrencyId
-                    , TotalWithoutTaxes: i.TotalWithoutTaxes
-                    , AccountInvoiceId: i.AccountInvoiceId
-                    , ZReportNumber: i.ZReportNumber
-                    , IsManual: i.IsManual
-                    , TicketsCount: i.TicketsCount
-                    , OperatorShiftId: i.OperatorShiftId
-                    , TotalTaxes: i.TotalTaxes
-                    , TemporaryBillPrinted: i.TemporaryBillPrinted
-                    , DiscountOnTotalValue: i.DiscountOnTotalValue
-                    , ReferenceZreport: i.ReferenceZreport
-                    , ServiceTimeSlot: i.ServiceTimeSlot
-                    , LotteryCode: i.LotteryCode
-                    , IsPrintedOnFiscalPrinter: i.IsPrintedOnFiscalPrinter
-                    , ProgramVersion: i.ProgramVersion
-                    , IsWaste: i.IsWaste
-                    , IsOnline: i.IsOnline
-                    , Customer: i.Partner != null ? new PartnerDTO(
-                                                              Code: i.Partner.CardCode ?? "NoCode"
-                                                            , Name: i.Partner.Name
-                                                            , VatNumber: i.Partner.Vat
-                                                            , Zip: i.Partner.Zip
-                                                            , City: i.Partner.City
-                                                            ) : null
-                    , Cashier: i.Cashier != null ? new UserDTO(i.Cashier.Code, i.Cashier.Name) : null
-                    , Shop: i.Shop != null ? new ShopDTO(
-                              Code: i.Shop.Code
-                            , Name: i.Shop.Name
-                            , Address: ""
-                            , City: ""
-                            , Zip: ""
-                            , Province: ""
-                            , Country: ""
+                      i.Id
+                    , i.ReceiptRealDatetime
+                    , i.TillCode
+                    , i.CancelUserId
+                    , i.Canceled
+                    , i.ShopId
+                    , i.CashierId
+                    , i.TillId
+                    , i.Total
+                    , i.PartnerId
+                    , i.ReceiptDate
+                    , i.IsReversal
+                    , i.ReceiptTime
+                    , i.ReversedTransactionId
+                    , i.ShopCode
+                    , i.FiscalNumber
+                    , i.TransactionNumber
+                    , i.Reason
+                    , i.PartnerAnomaly
+                    , i.InvoiceNumber
+                    , i.HallCode
+                    , i.NumberOfItems
+                    , i.CoverChargeQty
+                    , i.BookkeepingDate.HasValue ? i.BookkeepingDate.Value.ToDateTime(TimeOnly.Parse("00:00 AM")) : null
+                    , i.CashierUserCode
+                    , i.ReversalTransactionId
+                    , i.ReferenceReceipt
+                    , i.CancelDate
+                    , i.CustomerNumber
+                    , i.TableCode
+                    , i.ReceiptDatetime
+                    , i.ServiceId
+                    , i.Provenience
+                    , i.CompanyCurrencyId
+                    , i.TotalWithoutTaxes
+                    , i.AccountInvoiceId
+                    , i.ZReportNumber
+                    , i.IsManual
+                    , i.TicketsCount
+                    , i.OperatorShiftId
+                    , i.TotalTaxes
+                    , i.TemporaryBillPrinted
+                    , i.DiscountOnTotalValue
+                    , i.ReferenceZreport
+                    , i.ServiceTimeSlot
+                    , i.LotteryCode
+                    , i.IsPrintedOnFiscalPrinter
+                    , i.ProgramVersion
+                    , i.IsWaste
+                    , i.IsOnline
+                    , i.Partner != null ? new PartnerDTO(
+                                                    i.Partner.CardCode ?? "NoCode"
+                                                , i.Partner.Name
+                                                , i.Partner.Vat
+                                                , i.Partner.Zip
+                                                , i.Partner.City
+                                                ) : null
+                    , i.Cashier != null ? new UserDTO(i.Cashier.Code, i.Cashier.Name) : null
+                    , i.Shop != null ? new ShopDTO(
+                              i.Shop.Code
+                            , i.Shop.Name
+                            , ""
+                            , ""
+                            , ""
+                            , ""
+                            , ""
                         ) : null
-                    , Till: i.Till != null ? new TillDTO(
-                            Code: i.Till.Code
-                            , Name: i.Till.Name
-                            , IpAddress: i.Till.IpAddress
-                            , PrinterModel: i.Till.TillsReceiptPrinterModel
-                            , TillType: i.Till.TillTypeId.ToString()
+                    , i.Till != null ? new TillDTO(
+                              i.Till.Code
+                            , i.Till.Name
+                            , i.Till.IpAddress
+                            , i.Till.TillsReceiptPrinterModel
+                            , i.Till.TillTypeId.ToString()
                         ) : null
-                    , Rows: i.ScmReceiptItems
+                    , i.ScmReceiptItems
                         .OrderBy(r => r.Id)
                         .Select(r => new RowDto(
-                              Id: r.Id
-                            , CategoryCode: r.CategoryCode
-                            , VatCodeId: r.VatCodeId
-                            , Qty: r.Qty
-                            , WaiterUserCode: r.WaiterUserCode
-                            , ItemDate: r.ItemDate
-                            , DiscountRate: r.DiscountRate
-                            , HeaderId: r.HeaderId
-                            , ProductCode: r.ProductCode
-                            , FiscalNetAmount: r.FiscalNetAmount
-                            , FiscalAmount: r.FiscalAmount
-                            , UnitPrice: r.UnitPrice
-                            , GiftCode: r.GiftCode
-                            , State: r.State
-                            , Score: r.Score
-                            , SerialNumber: r.SerialNumber
-                            , ItemTime: r.ItemTime
-                            , WaiterId: r.WaiterId
-                            , Discountable: r.Discountable
-                            , Description: r.Description
-                            , ItemDatetime: r.ItemDatetime
-                            , Barcode: r.Barcode
-                            , VatCode: r.VatCode
-                            , Reason: r.Reason
-                            , DiscountFromTotal: r.DiscountFromTotal
-                            , MixmatchCode: r.MixmatchCode
-                            , DiscountAmount: r.DiscountAmount
-                            , ProductType: r.ProductType
-                            , ProductId: r.ProductId
-                            , MessageText: r.MessageText
-                            , Amount: r.Amount
-                            , VatRate: r.VatRate
-                            , NetAmount: r.NetAmount
-                            , Weight: r.Weight
-                            , FatherProduct: r.FatherProduct
-                            , FatherProductId: r.FatherProductId
-                            , PriceListId: r.PriceListId
-                            , PriceList: r.PriceList
-                            , ConsumedPoints: r.ConsumedPoints
-                            , ItemRealPrice: r.ItemRealPrice
-                            , ItemRealPriceFiscalNet: r.ItemRealPriceFiscalNet
-                            , ItemInmenuPrice: r.ItemInmenuPrice
-                            , ItemMenuPrice: r.ItemMenuPrice
-                            , ItemMenuPriceFiscalNet: r.ItemMenuPriceFiscalNet
-                            , ItemInmenuPriceFiscalNet: r.ItemInmenuPriceFiscalNet
-                            , ItemNotPrintable: r.ItemNotPrintable
-                            , SuspensionTime: r.SuspensionTime
-                            , ItemWineemotionBarcode: r.ItemWineemotionBarcode
-                            , DiscountOnRowId: r.DiscountOnRowId
-                            , ItemPromoLabel: r.ItemPromoLabel
-                            , ItemPromoId: r.ItemPromoId
-                            , ItemTillId: r.ItemTillId
+                              r.Id
+                            , r.CategoryCode
+                            , r.VatCodeId
+                            , r.Qty
+                            , r.WaiterUserCode
+                            , r.ItemDate
+                            , r.DiscountRate
+                            , r.HeaderId
+                            , r.ProductCode
+                            , r.FiscalNetAmount
+                            , r.FiscalAmount
+                            , r.UnitPrice
+                            , r.GiftCode
+                            , r.State
+                            , r.Score
+                            , r.SerialNumber
+                            , r.ItemTime
+                            , r.WaiterId
+                            , r.Discountable
+                            , r.Description
+                            , r.ItemDatetime
+                            , r.Barcode
+                            , r.VatCode
+                            , r.Reason
+                            , r.DiscountFromTotal
+                            , r.MixmatchCode
+                            , r.DiscountAmount
+                            , r.ProductType
+                            , r.ProductId
+                            , r.MessageText
+                            , r.Amount
+                            , r.VatRate
+                            , r.NetAmount
+                            , r.Weight
+                            , r.FatherProduct
+                            , r.FatherProductId
+                            , r.PriceListId
+                            , r.PriceList
+                            , r.ConsumedPoints
+                            , r.ItemRealPrice
+                            , r.ItemRealPriceFiscalNet
+                            , r.ItemInmenuPrice
+                            , r.ItemMenuPrice
+                            , r.ItemMenuPriceFiscalNet
+                            , r.ItemInmenuPriceFiscalNet
+                            , r.ItemNotPrintable
+                            , r.SuspensionTime
+                            , r.ItemWineemotionBarcode
+                            , r.DiscountOnRowId
+                            , r.ItemPromoLabel
+                            , r.ItemPromoId
+                            , r.ItemTillId
                         ))
                         .ToList()
-                    , Vats: i.ScmReceiptVats
+                    , i.ScmReceiptVats
                         .OrderBy(v => v.Id)
                         .Select(v => new VatDto(
-                                Id: v.Id
-                                , VatAmount: v.VatAmount
-                                , AccountTaxId: v.AccountTaxId
-                                , HeaderId: v.HeaderId
-                                , NetAmount: v.NetAmount
-                                , GrossAmount: v.GrossAmount
+                                  v.Id
+                                , v.VatAmount
+                                , v.AccountTaxId
+                                , v.HeaderId
+                                , v.NetAmount
+                                , v.GrossAmount
                         ))
                         .ToList()
-                    , Payments: i.ScmReceiptPayments
+                    , i.ScmReceiptPayments
                         .OrderBy(p => p.Id)
                         .Select(p => new PaymentDto(
-                                  Id: p.Id
-                                , PaymentId: p.PaymentId
-                                , PaymentDate: p.PaymentDate
-                                , PaymentDatetime: p.PaymentDatetime
-                                , Code: p.Code
-                                , PaymentTime: p.PaymentTime
-                                , Qty: p.Qty
-                                , Currency: p.Currency
-                                , Amount: p.Amount
-                                , TicketCode: p.TicketCode
-                                , HeaderId: p.HeaderId
-                                , Type: p.Type
-                                , IsRechargeTicket: p.IsRechargeTicket
-                                , PaymentTip: p.PaymentTip
-                                , TicketIsDematerialized: p.TicketIsDematerialized
-                                , TicketCodeline: p.TicketCodeline
-                                , SatispayPaymentId: p.SatispayPaymentId
+                                  p.Id
+                                , p.PaymentId
+                                , p.PaymentDate
+                                , p.PaymentDatetime
+                                , p.Code
+                                , p.PaymentTime
+                                , p.Qty
+                                , p.Currency
+                                , p.Amount
+                                , p.TicketCode
+                                , p.HeaderId
+                                , p.Type
+                                , p.IsRechargeTicket
+                                , p.PaymentTip
+                                , p.TicketIsDematerialized
+                                , p.TicketCodeline
+                                , p.SatispayPaymentId
                         ))
                         .ToList()
                 ))
@@ -199,7 +205,7 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
 
             var bulk = await _os.BulkAsync(b => b
                 .Index(_index)
-                .IndexMany(chunk, d => d.Id(doc => doc.Id)), ct);
+                .IndexMany(chunk, (descriptor, doc) => descriptor.Id(doc.Id)), ct);
 
             if (bulk.Errors)
             {
@@ -224,6 +230,10 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
             .Map<DocumentDTO>(m => m
                 .AutoMap()
                 .Properties(ps => ps
+                    .Nested<PartnerDTO>(n => n.Name(p => p.Customer).AutoMap())
+                    .Nested<UserDTO>(n => n.Name(p => p.Cashier).AutoMap())
+                    .Nested<ShopDTO>(n => n.Name(p => p.Shop).AutoMap())
+                    .Nested<TillDTO>(n => n.Name(p => p.Till).AutoMap())
                     .Nested<RowDto>(n => n.Name(p => p.Rows).AutoMap())
                     .Nested<VatDto>(n => n.Name(p => p.Vats).AutoMap())
                     .Nested<PaymentDto>(n => n.Name(p => p.Payments).AutoMap())
@@ -231,6 +241,6 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
             ), ct);
 
         if (!create.IsValid)
-            throw new InvalidOperationException($"Creazione indice '{_index}' fallita: {create.ServerError}");
+            throw new InvalidOperationException($"Creazione indice '{_index}' fallita: {create.DebugInformation}");
     }
 }

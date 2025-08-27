@@ -13,12 +13,12 @@ var builder = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((ctx, services) =>
     {
-        var cs = ctx.Configuration.GetConnectionString("Postgres")!;
+        var cs = ctx.Configuration["Database:ConnectionString"];
         services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(cs));
 
         var osUri = ctx.Configuration["OpenSearch:Uri"]!;
         var osUser = ctx.Configuration["OpenSearch:User"];
-        var osPass = ctx.Configuration["OpenSearch:Pass"];
+        var osPass = ctx.Configuration["OpenSearch:Password"];
         var osIndex = ctx.Configuration["OpenSearch:Index"];
 
         services.AddSingleton(OpenSearchFactory.Create(osUri, osUser, osPass, osIndex));
