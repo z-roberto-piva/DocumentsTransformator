@@ -1,5 +1,5 @@
 ﻿using DocumentsTransformator.Data;
-using DocumentsTransformator.Service;
+using DocumentsTransformator.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,16 +23,19 @@ var builder = Host.CreateDefaultBuilder(args)
 
         services.AddSingleton(OpenSearchFactory.Create(osUri, osUser, osPass, osIndex));
         services.AddTransient<InvoiceIngestionService>();
+        services.AddTransient<BusinessCoachLogIngestionService>();
     });
 
 using var host = builder.Build();
 using var scope = host.Services.CreateScope();
-var svc = scope.ServiceProvider.GetRequiredService<InvoiceIngestionService>();
+var InvoiceSvc = scope.ServiceProvider.GetRequiredService<InvoiceIngestionService>();
+var BusinessCoachSvc = scope.ServiceProvider.GetRequiredService<BusinessCoachLogIngestionService>();
 
 try
 {
-    await svc.RunAsync();
-    Console.WriteLine("Indicizzazione completata.");
+    await InvoiceSvc.RunAsync();
+    // await BusinessCoachSvc.RunAsync();
+    Console.WriteLine("Indicizzazione tipo 1 completata.");
 }
 catch (Exception ex)
 {

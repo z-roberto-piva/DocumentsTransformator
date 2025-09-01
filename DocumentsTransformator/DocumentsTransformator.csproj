@@ -31,5 +31,5 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
+<ItemGroup><None Include="BusinessCoachData\\**\\*.*" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>

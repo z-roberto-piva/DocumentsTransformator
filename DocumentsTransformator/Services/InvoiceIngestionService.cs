@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using OpenSearch.Client;
 
-namespace DocumentsTransformator.Service;
+namespace DocumentsTransformator.Services;
 
 public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, IConfiguration cfg)
 {
