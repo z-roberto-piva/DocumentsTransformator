@@ -1,0 +1,153 @@
+{
+    "externalId": "165251",
+    "serviceType": "Desk",
+    "billDateTime": "2025-08-11T23:38:41.57Z",
+    "covers": 0,
+    "tableCode": "BANCO",
+    "room": {
+        "externalId": "-1",
+        "name": "BANCO"
+    },
+    "operator": {
+        "externalId": "0",
+        "name": "Amministratore"
+    },
+    "documentType": {
+        "externalId": "S",
+        "name": "SCONTRINO"
+    },
+    "shift": {
+        "externalId": "23",
+        "name": "dalle 23:00 Alle 24:00"
+    },
+    "cashDesk": {
+        "externalId": "A",
+        "name": "POSTAZIONE_A"
+    },
+    "details": [
+        {
+            "type": "Standard",
+            "externalId": "165251_368914",
+            "rowNumber": 368914,
+            "product": {
+                "externalId": "301",
+                "name": "CIALDA PICCOLA",
+                "category": {
+                    "externalId": "4",
+                    "name": "GELATERIA"
+                }
+            },
+            "quantity": 1.0,
+            "totalIncome": 2.7,
+            "vat": 10.0
+        },
+        {
+            "type": "Standard",
+            "externalId": "165251_368915",
+            "rowNumber": 368915,
+            "product": {
+                "externalId": "301",
+                "name": "CIALDA PICCOLA",
+                "category": {
+                    "externalId": "4",
+                    "name": "GELATERIA"
+                }
+            },
+            "quantity": 1.0,
+            "totalIncome": 2.7,
+            "vat": 10.0
+        },
+        {
+            "type": "Standard",
+            "externalId": "165251_368916",
+            "rowNumber": 368916,
+            "product": {
+                "externalId": "301",
+                "name": "CIALDA PICCOLA",
+                "category": {
+                    "externalId": "4",
+                    "name": "GELATERIA"
+                }
+            },
+            "quantity": 1.0,
+            "totalIncome": 2.7,
+            "vat": 10.0
+        },
+        {
+            "type": "Standard",
+            "externalId": "165251_368917",
+            "rowNumber": 368917,
+            "product": {
+                "externalId": "301",
+                "name": "CIALDA PICCOLA",
+                "category": {
+                    "externalId": "4",
+                    "name": "GELATERIA"
+                }
+            },
+            "quantity": 1.0,
+            "totalIncome": 2.7,
+            "vat": 10.0
+        },
+        {
+            "type": "Standard",
+            "externalId": "165251_368918",
+            "rowNumber": 368918,
+            "product": {
+                "externalId": "301",
+                "name": "CIALDA PICCOLA",
+                "category": {
+                    "externalId": "4",
+                    "name": "GELATERIA"
+                }
+            },
+            "quantity": 2.0,
+            "totalIncome": 5.4,
+            "vat": 10.0
+        },
+        {
+            "type": "Standard",
+            "externalId": "165251_368919",
+            "rowNumber": 368919,
+            "product": {
+                "externalId": "301",
+                "name": "CIALDA PICCOLA",
+                "category": {
+                    "externalId": "4",
+                    "name": "GELATERIA"
+                }
+            },
+            "quantity": 2.0,
+            "totalIncome": 5.4,
+            "vat": 10.0
+        },
+        {
+            "type": "Standard",
+            "externalId": "165251_368920",
+            "rowNumber": 368920,
+            "product": {
+                "externalId": "302",
+                "name": "CIALDA MEDIA",
+                "category": {
+                    "externalId": "4",
+                    "name": "GELATERIA"
+                }
+            },
+            "quantity": 1.0,
+            "totalIncome": 3.2,
+            "vat": 10.0
+        }
+    ],
+    "paymentDetails": [
+        {
+            "externalId": "4_165251",
+            "amount": 24.8,
+            "category": "cash",
+            "paymentMethodDescription": "CONTANTI",
+            "terminalId": "",
+            "acquirer": "",
+            "application": "",
+            "paymentType": ""
+        }
+    ]
+}

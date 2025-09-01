@@ -1,0 +1,58 @@
+{
+  "externalId": "string",
+  "serviceType": "desk",
+  "billDateTime": "2025-09-01T13:54:05.891Z",
+  "details": [
+    {
+      "type": "standard",
+      "externalId": "string",
+      "rowNumber": 0,
+      "product": {
+        "externalId": "string",
+        "name": "string",
+        "category": {
+          "externalId": "string",
+          "name": "string"
+        }
+      },
+      "quantity": 0,
+      "totalIncome": 0,
+      "vat": 0
+    }
+  ],
+  "paymentDetails": [
+    {
+      "externalId": "string",
+      "amount": 0,
+      "category": "unknown",
+      "paymentMethodDescription": "string",
+      "terminalId": "string",
+      "acquirer": "string",
+      "application": "string",
+      "paymentType": "string",
+      "zuid": "string"
+    }
+  ],
+  "covers": 0,
+  "tableCode": "string",
+  "room": {
+    "externalId": "string",
+    "name": "string"
+  },
+  "operator": {
+    "externalId": "string",
+    "name": "string"
+  },
+  "documentType": {
+    "externalId": "string",
+    "name": "string"
+  },
+  "shift": {
+    "externalId": "string",
+    "name": "string"
+  },
+  "cashDesk": {
+    "externalId": "string",
+    "name": "string"
+  }
+}
