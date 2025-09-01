@@ -53,4 +53,15 @@ public sealed record RowDto(
     , string? ItemPromoLabel
     , int? ItemPromoId
     , int? ItemTillId
+    , string? NameTemplate
+    , bool? IsAddition
+    , bool? IsNoFood
+    , bool? IsNegative
+    , string? ProductName
+    , string? SectorName
+    , string? SectorCode
+    , string? CategoryCodeOnProduct
+    , string? CategoryName
+    , string? SubfamilyCode
+    , string? SubfamilyName
 );

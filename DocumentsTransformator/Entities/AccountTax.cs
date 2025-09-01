@@ -189,6 +189,8 @@ public partial class AccountTax
 
     public virtual AccountTax? Parent { get; set; }
 
+    public virtual ICollection<ScmPayment> ScmPayments { get; set; } = new List<ScmPayment>();
+
     public virtual ICollection<ScmReceiptItem> ScmReceiptItems { get; set; } = new List<ScmReceiptItem>();
 
     public virtual ICollection<ScmReceiptPaymentDivision> ScmReceiptPaymentDivisions { get; set; } = new List<ScmReceiptPaymentDivision>();

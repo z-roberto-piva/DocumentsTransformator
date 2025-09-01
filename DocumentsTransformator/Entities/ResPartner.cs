@@ -610,7 +610,11 @@ public partial class ResPartner
 
     public virtual ICollection<ResPartner> InverseParent { get; set; } = new List<ResPartner>();
 
+    public virtual ScmPayment? OverridePrepaidPaymentNavigation { get; set; }
+
     public virtual ResPartner? Parent { get; set; }
+
+    public virtual ICollection<ScmPayment> ScmPayments { get; set; } = new List<ScmPayment>();
 
     public virtual ICollection<ScmReceiptHeader> ScmReceiptHeaders { get; set; } = new List<ScmReceiptHeader>();
 

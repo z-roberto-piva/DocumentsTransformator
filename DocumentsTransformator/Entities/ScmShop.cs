@@ -905,11 +905,15 @@ public partial class ScmShop
 
     public virtual ProductProduct? PikupProduct { get; set; }
 
+    public virtual ScmPayment? PrepaidRevaluationPaymentNavigation { get; set; }
+
     public virtual ScmTill? PrepaidTillNavigation { get; set; }
 
     public virtual ScmUser? PrepaidUserNavigation { get; set; }
 
     public virtual ProductProduct? RechargeBonusItemNavigation { get; set; }
+
+    public virtual ScmPayment? SatispayPayment { get; set; }
 
     public virtual ICollection<ScmReceiptHeader> ScmReceiptHeaders { get; set; } = new List<ScmReceiptHeader>();
 

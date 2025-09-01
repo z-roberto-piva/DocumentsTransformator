@@ -68,5 +68,6 @@ public sealed record DocumentDTO(
     TillDTO? Till,
     IReadOnlyList<RowDto>? Rows,
     IReadOnlyList<VatDto>? Vats,
-    IReadOnlyList<PaymentDto>? Payments
+    IReadOnlyList<PaymentDto>? Payments,
+    IReadOnlyList<AgreementDto>? Agreements
 );

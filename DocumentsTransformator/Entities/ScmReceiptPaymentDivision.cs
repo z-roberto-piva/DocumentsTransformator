@@ -55,6 +55,8 @@ public partial class ScmReceiptPaymentDivision
 
     public virtual ScmReceiptHeader? Header { get; set; }
 
+    public virtual ScmPayment? Payment { get; set; }
+
     public virtual ProductProduct? Product { get; set; }
 
     public virtual AccountTax? Vat { get; set; }

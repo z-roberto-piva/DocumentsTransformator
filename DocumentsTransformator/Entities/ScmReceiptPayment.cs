@@ -104,4 +104,6 @@ public partial class ScmReceiptPayment
     public decimal? UnitValue { get; set; }
 
     public virtual ScmReceiptHeader? Header { get; set; }
+
+    public virtual ScmPayment? Payment { get; set; }
 }

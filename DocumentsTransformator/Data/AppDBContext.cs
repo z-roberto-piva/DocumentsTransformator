@@ -28,6 +28,10 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<ResPartner> ResPartners { get; set; }
 
+    public virtual DbSet<ScmAgreement> ScmAgreements { get; set; }
+
+    public virtual DbSet<ScmPayment> ScmPayments { get; set; }
+
     public virtual DbSet<ScmReceiptAgreement> ScmReceiptAgreements { get; set; }
 
     public virtual DbSet<ScmReceiptAnalyticItem> ScmReceiptAnalyticItems { get; set; }
@@ -64,9 +68,9 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<ScmUser> ScmUsers { get; set; }
 
-//     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-// #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//         => optionsBuilder.UseNpgsql("Host=localhost;Username=zmenu;Password=sviluppo;Database=anondb_dev");
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseNpgsql("Host=localhost;Username=zmenu;Password=sviluppo;Database=anondb_dev");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -639,6 +643,11 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.ProductTmpl).WithMany(p => p.ProductProducts)
                 .HasForeignKey(d => d.ProductTmplId)
                 .HasConstraintName("product_product_product_tmpl_id_fkey");
+
+            entity.HasOne(d => d.WinPaymentNavigation).WithMany(p => p.ProductProducts)
+                .HasForeignKey(d => d.WinPayment)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("product_product_win_payment_fkey");
         });
 
         modelBuilder.Entity<ProductTemplate>(entity =>
@@ -1278,10 +1287,269 @@ public partial class AppDbContext : DbContext
                 .HasComment("Zip")
                 .HasColumnName("zip");
 
+            entity.HasOne(d => d.OverridePrepaidPaymentNavigation).WithMany(p => p.ResPartners)
+                .HasForeignKey(d => d.OverridePrepaidPayment)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("res_partner_override_prepaid_payment_fkey");
+
             entity.HasOne(d => d.Parent).WithMany(p => p.InverseParent)
                 .HasForeignKey(d => d.ParentId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("res_partner_parent_id_fkey");
+        });
+
+        modelBuilder.Entity<ScmAgreement>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("scm_agreements_pkey");
+
+            entity.ToTable("scm_agreements", tb => tb.HasComment("scm.agreements"));
+
+            entity.HasIndex(e => e.Code, "scm_agreements_code_uniq").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ActiveFri)
+                .HasComment("Active Friday")
+                .HasColumnName("active_fri");
+            entity.Property(e => e.ActiveFrom)
+                .HasComment("Active From")
+                .HasColumnName("active_from");
+            entity.Property(e => e.ActiveMon)
+                .HasComment("Active Monday")
+                .HasColumnName("active_mon");
+            entity.Property(e => e.ActiveSat)
+                .HasComment("Active Saturday")
+                .HasColumnName("active_sat");
+            entity.Property(e => e.ActiveSun)
+                .HasComment("Active Sunday")
+                .HasColumnName("active_sun");
+            entity.Property(e => e.ActiveThu)
+                .HasComment("Active Thursday")
+                .HasColumnName("active_thu");
+            entity.Property(e => e.ActiveTo)
+                .HasComment("Active To")
+                .HasColumnName("active_to");
+            entity.Property(e => e.ActiveTue)
+                .HasComment("Active Tuesday")
+                .HasColumnName("active_tue");
+            entity.Property(e => e.ActiveWed)
+                .HasComment("Active Wednesday")
+                .HasColumnName("active_wed");
+            entity.Property(e => e.AgreementAmount)
+                .HasComment("Agreement Amount")
+                .HasColumnName("agreement_amount");
+            entity.Property(e => e.AgreementFixedAmount)
+                .HasComment("Agreement Fixed Amount")
+                .HasColumnName("agreement_fixed_amount");
+            entity.Property(e => e.AgreementScore)
+                .HasComment("Agreement Score")
+                .HasColumnName("agreement_score");
+            entity.Property(e => e.AgreementType)
+                .HasComment("Agreement Type")
+                .HasColumnType("character varying")
+                .HasColumnName("agreement_type");
+            entity.Property(e => e.Code)
+                .HasMaxLength(10)
+                .HasComment("Code")
+                .HasColumnName("code");
+            entity.Property(e => e.CreateDate)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("create_date");
+            entity.Property(e => e.CreateUid).HasColumnName("create_uid");
+            entity.Property(e => e.DefaultInvoicingArticle)
+                .HasComment("Default Invoicing Article")
+                .HasColumnName("default_invoicing_article");
+            entity.Property(e => e.DiscountAmount)
+                .HasComment("Discount Amount")
+                .HasColumnName("discount_amount");
+            entity.Property(e => e.DiscountOnExtra)
+                .HasComment("Discount only on Extra")
+                .HasColumnName("discount_on_extra");
+            entity.Property(e => e.DiscountOnTotalAppliedOnExtra)
+                .HasComment("Discount on total applied on Extra")
+                .HasColumnName("discount_on_total_applied_on_extra");
+            entity.Property(e => e.DiscountType)
+                .HasComment("Discount Type")
+                .HasColumnType("character varying")
+                .HasColumnName("discount_type");
+            entity.Property(e => e.EanArticleComplete)
+                .HasComment("Article Complete Meal")
+                .HasColumnName("ean_article_complete");
+            entity.Property(e => e.EanArticleFixedAmount)
+                .HasComment("Article Fixed Amount")
+                .HasColumnName("ean_article_fixed_amount");
+            entity.Property(e => e.EanArticleSupplementAgr)
+                .HasComment("Article Supplement Agreement")
+                .HasColumnName("ean_article_supplement_agr");
+            entity.Property(e => e.Enabled)
+                .HasComment("Enabled")
+                .HasColumnName("enabled");
+            entity.Property(e => e.ExportToHost)
+                .HasComment("Export to host")
+                .HasColumnName("export_to_host");
+            entity.Property(e => e.LockManualDiscount)
+                .HasComment("Lock Manual Discount")
+                .HasColumnName("lock_manual_discount");
+            entity.Property(e => e.MaxPassages)
+                .HasComment("Max Passages")
+                .HasColumnName("max_passages");
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .HasComment("Name")
+                .HasColumnName("name");
+            entity.Property(e => e.Note)
+                .HasComment("Note")
+                .HasColumnName("note");
+            entity.Property(e => e.PaymentId)
+                .HasComment("Payment")
+                .HasColumnName("payment_id");
+            entity.Property(e => e.PricelistId)
+                .HasComment("Pricelist")
+                .HasColumnName("pricelist_id");
+            entity.Property(e => e.ScoreCalculationOrder)
+                .HasComment("Calculation Order")
+                .HasColumnType("character varying")
+                .HasColumnName("score_calculation_order");
+            entity.Property(e => e.ShowRemainingPointsWarning)
+                .HasComment("Show Remaining Poinits Warning")
+                .HasColumnName("show_remaining_points_warning");
+            entity.Property(e => e.TrackInAgreementCheck)
+                .HasComment("Track in agreement check")
+                .HasColumnName("track_in_agreement_check");
+            entity.Property(e => e.WriteDate)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("write_date");
+            entity.Property(e => e.WriteUid).HasColumnName("write_uid");
+
+            entity.HasOne(d => d.DefaultInvoicingArticleNavigation).WithMany(p => p.ScmAgreementDefaultInvoicingArticleNavigations)
+                .HasForeignKey(d => d.DefaultInvoicingArticle)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_agreements_default_invoicing_article_fkey");
+
+            entity.HasOne(d => d.EanArticleCompleteNavigation).WithMany(p => p.ScmAgreementEanArticleCompleteNavigations)
+                .HasForeignKey(d => d.EanArticleComplete)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_agreements_ean_article_complete_fkey");
+
+            entity.HasOne(d => d.EanArticleFixedAmountNavigation).WithMany(p => p.ScmAgreementEanArticleFixedAmountNavigations)
+                .HasForeignKey(d => d.EanArticleFixedAmount)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_agreements_ean_article_fixed_amount_fkey");
+
+            entity.HasOne(d => d.EanArticleSupplementAgrNavigation).WithMany(p => p.ScmAgreementEanArticleSupplementAgrNavigations)
+                .HasForeignKey(d => d.EanArticleSupplementAgr)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_agreements_ean_article_supplement_agr_fkey");
+
+            entity.HasOne(d => d.Payment).WithMany(p => p.ScmAgreements)
+                .HasForeignKey(d => d.PaymentId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_agreements_payment_id_fkey");
+        });
+
+        modelBuilder.Entity<ScmPayment>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("scm_payments_pkey");
+
+            entity.ToTable("scm_payments", tb => tb.HasComment("scm.payments"));
+
+            entity.HasIndex(e => e.Code, "scm_payments_code_uniq").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.AmountInputFlag)
+                .HasComment("Amount Input Flag")
+                .HasColumnName("amount_input_flag");
+            entity.Property(e => e.BpeIssuerCode)
+                .HasMaxLength(10)
+                .HasComment("BPE Issuer Code")
+                .HasColumnName("bpe_issuer_code");
+            entity.Property(e => e.Code)
+                .HasMaxLength(10)
+                .HasComment("Code")
+                .HasColumnName("code");
+            entity.Property(e => e.CreateDate)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("create_date");
+            entity.Property(e => e.CreateUid).HasColumnName("create_uid");
+            entity.Property(e => e.InvoiceCustomerId)
+                .HasComment("Invoice Customer")
+                .HasColumnName("invoice_customer_id");
+            entity.Property(e => e.InvoiceProductId)
+                .HasComment("Invoice Product")
+                .HasColumnName("invoice_product_id");
+            entity.Property(e => e.IsCeliacDiseaseVoucher)
+                .HasComment("Is Celiac Disease Voucher")
+                .HasColumnName("is_celiac_disease_voucher");
+            entity.Property(e => e.IsCollectedPrepaid)
+                .HasComment("Is Collected Prepaid")
+                .HasColumnName("is_collected_prepaid");
+            entity.Property(e => e.IsForPrimanota)
+                .HasComment("Is for Primanota")
+                .HasColumnName("is_for_primanota");
+            entity.Property(e => e.IsRefundable)
+                .HasComment("Is Refundable")
+                .HasColumnName("is_refundable");
+            entity.Property(e => e.LeftoverFlag)
+                .HasComment("Leftover Flag")
+                .HasColumnName("leftover_flag");
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .HasComment("Name")
+                .HasColumnName("name");
+            entity.Property(e => e.OepaymentId)
+                .HasComment("Payment Account")
+                .HasColumnName("oepayment_id");
+            entity.Property(e => e.OpenDrawer)
+                .HasComment("Open drawer")
+                .HasColumnName("open_drawer");
+            entity.Property(e => e.PaymentDepositable)
+                .HasComment("Payment Depositable")
+                .HasColumnName("payment_depositable");
+            entity.Property(e => e.PaymentType)
+                .HasComment("Payment Type")
+                .HasColumnType("character varying")
+                .HasColumnName("payment_type");
+            entity.Property(e => e.PaymentTypeId)
+                .HasComment("Payment Type id")
+                .HasColumnName("payment_type_id");
+            entity.Property(e => e.SupplementProduct)
+                .HasComment("Supplement Product")
+                .HasColumnName("supplement_product");
+            entity.Property(e => e.TaxId)
+                .HasComment("Tax")
+                .HasColumnName("tax_id");
+            entity.Property(e => e.TicketDiscountInvoicing)
+                .HasComment("Tiket Discount fo Invoicing")
+                .HasColumnName("ticket_discount_invoicing");
+            entity.Property(e => e.UseShopTax)
+                .HasComment("Use Shop Tax")
+                .HasColumnName("use_shop_tax");
+            entity.Property(e => e.Value)
+                .HasComment("Value")
+                .HasColumnName("value");
+            entity.Property(e => e.WriteDate)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("write_date");
+            entity.Property(e => e.WriteUid).HasColumnName("write_uid");
+
+            entity.HasOne(d => d.InvoiceCustomer).WithMany(p => p.ScmPayments)
+                .HasForeignKey(d => d.InvoiceCustomerId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_payments_invoice_customer_id_fkey");
+
+            entity.HasOne(d => d.InvoiceProduct).WithMany(p => p.ScmPaymentInvoiceProducts)
+                .HasForeignKey(d => d.InvoiceProductId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_payments_invoice_product_id_fkey");
+
+            entity.HasOne(d => d.SupplementProductNavigation).WithMany(p => p.ScmPaymentSupplementProductNavigations)
+                .HasForeignKey(d => d.SupplementProduct)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_payments_supplement_product_fkey");
+
+            entity.HasOne(d => d.Tax).WithMany(p => p.ScmPayments)
+                .HasForeignKey(d => d.TaxId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_payments_tax_id_fkey");
         });
 
         modelBuilder.Entity<ScmReceiptAgreement>(entity =>
@@ -1350,6 +1618,11 @@ public partial class AppDbContext : DbContext
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("write_date");
             entity.Property(e => e.WriteUid).HasColumnName("write_uid");
+
+            entity.HasOne(d => d.Agreement).WithMany(p => p.ScmReceiptAgreements)
+                .HasForeignKey(d => d.AgreementId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_receipt_agreements_agreement_id_fkey");
 
             entity.HasOne(d => d.Header).WithMany(p => p.ScmReceiptAgreements)
                 .HasForeignKey(d => d.HeaderId)
@@ -2444,6 +2717,11 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.HeaderId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("scm_receipt_payments_header_id_fkey");
+
+            entity.HasOne(d => d.Payment).WithMany(p => p.ScmReceiptPayments)
+                .HasForeignKey(d => d.PaymentId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_receipt_payments_payment_id_fkey");
         });
 
         modelBuilder.Entity<ScmReceiptPaymentDivision>(entity =>
@@ -2493,6 +2771,11 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.HeaderId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("scm_receipt_payment_division_header_id_fkey");
+
+            entity.HasOne(d => d.Payment).WithMany(p => p.ScmReceiptPaymentDivisions)
+                .HasForeignKey(d => d.PaymentId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_receipt_payment_division_payment_id_fkey");
 
             entity.HasOne(d => d.Product).WithMany(p => p.ScmReceiptPaymentDivisions)
                 .HasForeignKey(d => d.ProductId)
@@ -3403,6 +3686,11 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("scm_shops_pikup_product_id_fkey");
 
+            entity.HasOne(d => d.PrepaidRevaluationPaymentNavigation).WithMany(p => p.ScmShopPrepaidRevaluationPaymentNavigations)
+                .HasForeignKey(d => d.PrepaidRevaluationPayment)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("scm_shops_prepaid_revaluation_payment_fkey");
+
             entity.HasOne(d => d.PrepaidTillNavigation).WithMany(p => p.ScmShops)
                 .HasForeignKey(d => d.PrepaidTill)
                 .OnDelete(DeleteBehavior.SetNull)
@@ -3417,6 +3705,11 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.RechargeBonusItem)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("scm_shops_recharge_bonus_item_fkey");
+
+            entity.HasOne(d => d.SatispayPayment).WithMany(p => p.ScmShopSatispayPayments)
+                .HasForeignKey(d => d.SatispayPaymentId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_shops_satispay_payment_id_fkey");
 
             entity.HasOne(d => d.TableCoverProduct).WithMany(p => p.ScmShopTableCoverProducts)
                 .HasForeignKey(d => d.TableCoverProductId)
@@ -4200,6 +4493,11 @@ public partial class AppDbContext : DbContext
                 .HasColumnType("character varying")
                 .HasColumnName("year_position");
 
+            entity.HasOne(d => d.BedzzlePayment).WithMany(p => p.ScmTillBedzzlePayments)
+                .HasForeignKey(d => d.BedzzlePaymentId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("scm_tills_bedzzle_payment_id_fkey");
+
             entity.HasOne(d => d.DefaultPettyCashOperatorNavigation).WithMany(p => p.ScmTillDefaultPettyCashOperatorNavigations)
                 .HasForeignKey(d => d.DefaultPettyCashOperator)
                 .OnDelete(DeleteBehavior.SetNull)
@@ -4219,6 +4517,11 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.MercuryGatewayId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("scm_tills_mercury_gateway_id_fkey");
+
+            entity.HasOne(d => d.Prepaidv2ErgoPaymentNavigation).WithMany(p => p.ScmTillPrepaidv2ErgoPaymentNavigations)
+                .HasForeignKey(d => d.Prepaidv2ErgoPayment)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("scm_tills_prepaidv2_ergo_payment_fkey");
 
             entity.HasOne(d => d.RoundingProductNavigation).WithMany(p => p.ScmTillRoundingProductNavigations)
                 .HasForeignKey(d => d.RoundingProduct)

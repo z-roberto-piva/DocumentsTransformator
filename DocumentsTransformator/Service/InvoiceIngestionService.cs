@@ -38,7 +38,7 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
         // _batchSize = _batchSizeEmergency == 0 ? _batchSize : _batchSizeEmergency;
 
         // Gestisco la procedura di caricamento con un while per poter eventualmente riavviare il caricamento in caso di errori
-        while (skip <= totalNumberOfRows)
+        while (skip < totalNumberOfRows)
         {
             try
             {
@@ -102,6 +102,15 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
                 {
                     // Sono già in modalità emergenza
                     emergencyErrorCount++;
+                    // Verifico se è il caso di passare al batch successivo
+                    if (preEmergencySkip == skip)
+                    {
+                        // Se non sono riuscito a processare nessun documento, passo al batch successivo
+                        skip += _batchSize;
+                        preEmergencySkip = skip;
+                        Console.WriteLine($"[Index Documents Batches] Nessun documento processato nel batch corrente. Passo al batch successivo da {skip} a {Math.Min(skip + _batchSize, totalNumberOfRows)}.");
+
+                    }
                     Console.Error.WriteLine($"[Index Documents Batches] Errore durante l'elaborazione del batch da {skip} a {Math.Min(skip + _batchSize, totalNumberOfRows)}: {ex}");
                     if (emergencyErrorCount >= _maxNumberOfErrors)
                     {
@@ -113,94 +122,6 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
             }
         }
 
-    }
-
-
-    public async Task RunAsync2(CancellationToken ct = default)
-    {
-        DateTime start = DateTime.Now;
-        Console.WriteLine($"[Index Documents Batches] Inizio indicizzazione fatture: {start}");
-        await EnsureIndexAsync(ct);
-
-        bool errorState = false;
-        int errorCount = 0;
-
-        var total = await _db.ScmReceiptHeaders.AsNoTracking().CountAsync(ct);
-        Console.WriteLine($"[Index Documents Batches] Totali: {total}");
-
-        // Gestisco momentaneamente il caricamento dei documenti problematici superiori a 970000
-        // Con un batchsize molto piccolo per individuare con precisione i documenti che danno errore
-
-        int initialSkip = _startingSkip == 0 ? 0 : _startingSkip;
-        _batchSize = _batchSizeEmergency == 0 ? _batchSize : _batchSizeEmergency;
-
-
-        for (int skip = initialSkip; skip < total; skip += _batchSize)
-        {
-            if (_endEmergencyBatchSize > 0 && skip >= _endEmergencyBatchSize)
-            {
-                Console.WriteLine($"[Index Documents Batches] Raggiunto il limite di fine emergenza a {skip} documenti. Reimposto batch size a {_batchSize}.");
-                _batchSize = int.TryParse(cfg["BatchSize"], out var b) ? b : 2000;
-            }
-
-            if (maxRecords.HasValue && skip >= maxRecords.Value)
-            {
-                Console.WriteLine($"[Index Documents Batches] Limite massimo di documenti ({maxRecords.Value}) raggiunto. Interrompo l'elaborazione.");
-                break;
-            }
-            DateTime batchStart = DateTime.Now;
-            Console.WriteLine($"[Index Documents Batches] Elaborazione batch da {skip} a {Math.Min(skip + _batchSize, total)}... Inizio: {batchStart}");
-
-            try
-            {
-                List<DocumentDTO> chunk = await GetChunk(_db, skip, ct);
-
-                if (chunk.Count == 0) break;
-                DateTime indexingStart = DateTime.Now;
-                Console.WriteLine($"[Index Documents Batches] Estrazione dati batch da {skip} a {Math.Min(skip + _batchSize, total)} completata. Fine: {DateTime.Now}. Durata: {DateTime.Now - batchStart}");
-                Console.WriteLine($"[Index Documents Batches] Indicizzazione batch da {skip} a {skip + chunk.Count}... Inizio: {indexingStart}");
-                var bulk = await _os.BulkAsync(b => b
-                    .Index(_index)
-                    .IndexMany(chunk, (descriptor, doc) => descriptor.Id(doc.Id)), ct);
-
-                DateTime indexingEnd = DateTime.Now;
-                Console.WriteLine($"[Index Documents Batches] Indicizzazione batch da {skip} a {skip + chunk.Count} completata. Fine: {indexingEnd}. Durata: {indexingEnd - indexingStart}");
-
-                if (bulk.Errors)
-                {
-                    var errors = string.Join("; ", bulk.ItemsWithErrors.Select(e => $"{e.Id}:{e.Error?.Reason}"));
-                    throw new InvalidOperationException($"Bulk fallito: {errors}");
-                }
-
-                Console.WriteLine($"[Index Documents Batches] Indicizzate {skip + chunk.Count}/{total}");
-                Console.WriteLine($"[Index Documents Batches] Durata totale elaborazione batch da {skip} a {Math.Min(skip + _batchSize, total)}: {DateTime.Now - batchStart}");
-                int DocsTillNow = skip + chunk.Count;
-                if (DocsTillNow % 100000 == 0)
-                {
-                    Console.WriteLine($"[Index Documents Batches] Tempo di elaborazione per {DocsTillNow} documenti: {(DateTime.Now - start).TotalMinutes / ((skip + chunk.Count) / 100000)} minuti");
-                }
-                if (errorState)
-                {
-                    errorState = false;
-                    errorCount = 0;
-                    Console.WriteLine($"[Index Documents Batches] Riepilogo: superato errore, errori consecutivi: {errorCount}. Resetto gli errori e proseguo l'elaborazione.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"[Index Documents Batches] Errore durante l'elaborazione del batch da {skip} a {Math.Min(skip + _batchSize, total)}: {ex}");
-                errorState = true;
-                errorCount++;
-                if (errorCount >= 10)
-                {
-                    Console.Error.WriteLine($"[Index Documents Batches] Raggiunto il numero massimo di errori consecutivi ({errorCount}). Interrompo l'elaborazione.");
-                    break;
-                }
-            }
-        }
-
-        await _os.Indices.RefreshAsync(_index, r => r, ct);
-        Console.WriteLine($"[Index Documents Batches] Fine indicizzazione fatture: {DateTime.Now}. Durata totale: {DateTime.Now - start}");
     }
 
     // Metodo che verifica l'esistenza dell'indice e lo crea se non esiste
@@ -221,6 +142,7 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
                     .Nested<RowDto>(n => n.Name(p => p.Rows).AutoMap())
                     .Nested<VatDto>(n => n.Name(p => p.Vats).AutoMap())
                     .Nested<PaymentDto>(n => n.Name(p => p.Payments).AutoMap())
+                    .Nested<AgreementDto>(n => n.Name(p => p.Agreements).AutoMap())
                 )
             ), ct);
 
@@ -297,9 +219,9 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
                               i.Shop.Code
                             , i.Shop.Name
                             , ""
-                            , ""
-                            , ""
-                            , ""
+                            , i.Shop.Partner != null ? i.Shop.Partner.City : ""
+                            , i.Shop.Partner != null ? i.Shop.Partner.Zip : ""
+                            , "" //i.Shop.Partner != null ? i.Shop.Partner.Province : ""
                             , ""
                         ) : null
                     , i.Till != null ? new TillDTO(
@@ -364,7 +286,18 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
                             , r.ItemPromoLabel
                             , r.ItemPromoId
                             , r.ItemTillId
-                        ))
+                            , r.Product != null ? r.Product.NameTemplate : ""
+                            , r.Product != null ? r.Product.IsAddition : false
+                            , r.Product != null ? r.Product.IsNoFood : false
+                            , r.Product != null ? r.Product.IsNegative : false
+                            , r.Product != null ? r.Product.ProductTmpl.Name : ""
+                            , r.Product != null ? r.Product.ProductTmpl != null ? r.Product.ProductTmpl.FiscalCateg != null ? r.Product.ProductTmpl.FiscalCateg.Code : "" : "" :""
+                            , r.Product != null ? r.Product.ProductTmpl != null ? r.Product.ProductTmpl.FiscalCateg != null ? r.Product.ProductTmpl.FiscalCateg.Name : "" : "" :""
+                            , r.Product != null ? r.Product.ProductTmpl != null ? r.Product.ProductTmpl.Categ != null ? r.Product.ProductTmpl.Categ.Code : "" : "" :""
+                            , r.Product != null ? r.Product.ProductTmpl != null ? r.Product.ProductTmpl.Categ != null ? r.Product.ProductTmpl.Categ.Name : "" : "" :""
+                            , r.Product != null ? r.Product.ProductTmpl != null ? r.Product.ProductTmpl.Subfamily != null ? r.Product.ProductTmpl.Subfamily.Code : "" : "" :""
+                            , r.Product != null ? r.Product.ProductTmpl != null ? r.Product.ProductTmpl.Subfamily != null ? r.Product.ProductTmpl.Subfamily.Name : "" : "" :""
+                        ))  
                         .ToList()
                     , i.ScmReceiptVats
                         .OrderBy(v => v.Id)
@@ -384,7 +317,8 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
                                 , p.PaymentId
                                 , p.PaymentDate
                                 , p.PaymentDatetime
-                                , p.Code
+                                , p.Payment != null ? p.Payment.Code : "NoCode"
+                                , p.Payment != null ? p.Payment.Name : "NoName"
                                 , p.PaymentTime
                                 , p.Qty
                                 , p.Currency
@@ -399,9 +333,28 @@ public class InvoiceIngestionService(AppDbContext db, IOpenSearchClient os, ICon
                                 , p.SatispayPaymentId
                         ))
                         .ToList()
+                    , i.ScmReceiptAgreements
+                        .OrderBy(a => a.Id)
+                        .Select(a => new AgreementDto(
+                                  a.Id
+                                , a.Code
+                                , a.AgreementId
+                                , a.Agreement != null ? a.Agreement.Code : "NoCode"
+                                , a.Agreement != null ? a.Agreement.Name : "NoName"
+                                , a.Extra
+                                , a.AgreementDate
+                                , a.AgreementDatetime
+                                , a.Qty
+                                , a.DiscountType
+                                , a.Amount
+                                , a.Score
+                                , a.Type
+                                , a.Badge
+                                , a.AgreementTime
+                                , a.DiscountAmount
+                        )) .ToList()
                 ))
                 .ToListAsync(ct);
     }
-
 
 }

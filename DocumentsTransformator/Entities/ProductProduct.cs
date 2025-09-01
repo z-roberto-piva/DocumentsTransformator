@@ -464,6 +464,18 @@ public partial class ProductProduct
 
     public virtual ProductTemplate ProductTmpl { get; set; } = null!;
 
+    public virtual ICollection<ScmAgreement> ScmAgreementDefaultInvoicingArticleNavigations { get; set; } = new List<ScmAgreement>();
+
+    public virtual ICollection<ScmAgreement> ScmAgreementEanArticleCompleteNavigations { get; set; } = new List<ScmAgreement>();
+
+    public virtual ICollection<ScmAgreement> ScmAgreementEanArticleFixedAmountNavigations { get; set; } = new List<ScmAgreement>();
+
+    public virtual ICollection<ScmAgreement> ScmAgreementEanArticleSupplementAgrNavigations { get; set; } = new List<ScmAgreement>();
+
+    public virtual ICollection<ScmPayment> ScmPaymentInvoiceProducts { get; set; } = new List<ScmPayment>();
+
+    public virtual ICollection<ScmPayment> ScmPaymentSupplementProductNavigations { get; set; } = new List<ScmPayment>();
+
     public virtual ICollection<ScmReceiptAnalyticItem> ScmReceiptAnalyticItems { get; set; } = new List<ScmReceiptAnalyticItem>();
 
     public virtual ICollection<ScmReceiptItem> ScmReceiptItemFatherProductNavigations { get; set; } = new List<ScmReceiptItem>();
@@ -499,4 +511,6 @@ public partial class ProductProduct
     public virtual ICollection<ScmTill> ScmTillRoundingProductNavigations { get; set; } = new List<ScmTill>();
 
     public virtual ICollection<ScmTill> ScmTillServiceProductNavigations { get; set; } = new List<ScmTill>();
+
+    public virtual ScmPayment? WinPaymentNavigation { get; set; }
 }

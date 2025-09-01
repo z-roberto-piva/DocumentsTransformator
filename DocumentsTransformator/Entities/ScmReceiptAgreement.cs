@@ -88,5 +88,7 @@ public partial class ScmReceiptAgreement
     /// </summary>
     public decimal? DiscountAmount { get; set; }
 
+    public virtual ScmAgreement? Agreement { get; set; }
+
     public virtual ScmReceiptHeader? Header { get; set; }
 }

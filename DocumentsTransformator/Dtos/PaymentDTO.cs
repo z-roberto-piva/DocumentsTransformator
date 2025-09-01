@@ -5,7 +5,8 @@ public sealed record PaymentDto(
     , int? PaymentId
     , string? PaymentDate
     , DateTime? PaymentDatetime
-    , string? Code
+    , string? PaymentCode
+    , string? PaymentName
     , string? PaymentTime
     , decimal? Qty
     , string? Currency

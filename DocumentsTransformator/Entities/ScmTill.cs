@@ -1098,6 +1098,8 @@ public partial class ScmTill
     /// </summary>
     public string? BusinessCentralCode { get; set; }
 
+    public virtual ScmPayment? BedzzlePayment { get; set; }
+
     public virtual ScmUser? DefaultPettyCashOperatorNavigation { get; set; }
 
     public virtual ScmTill? DefaultSharedPrinterQueueNavigation { get; set; }
@@ -1109,6 +1111,8 @@ public partial class ScmTill
     public virtual ICollection<ScmTill> InverseMercuryGateway { get; set; } = new List<ScmTill>();
 
     public virtual ScmTill? MercuryGateway { get; set; }
+
+    public virtual ScmPayment? Prepaidv2ErgoPaymentNavigation { get; set; }
 
     public virtual ProductProduct? RoundingProductNavigation { get; set; }
 
