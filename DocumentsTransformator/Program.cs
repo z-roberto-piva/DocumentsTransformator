@@ -33,8 +33,8 @@ var BusinessCoachSvc = scope.ServiceProvider.GetRequiredService<BusinessCoachLog
 
 try
 {
-    await InvoiceSvc.RunAsync();
-    // await BusinessCoachSvc.RunAsync();
+    // await InvoiceSvc.RunAsync();
+    await BusinessCoachSvc.RunAsync();
     Console.WriteLine("Indicizzazione tipo 1 completata.");
 }
 catch (Exception ex)

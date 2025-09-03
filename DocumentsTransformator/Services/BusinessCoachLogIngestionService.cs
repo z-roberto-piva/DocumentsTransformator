@@ -1,6 +1,7 @@
 // Servizio che legge i dati dal file di log .\BusinessCoach\ExampleData\2025-08-21.log
 // estrae i payload JSON e li salva nel database e in OpenSearch
 
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using DocumentsTransformator.Dtos.BusinessCoach;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,11 @@ public partial class BusinessCoachLogIngestionService(IOpenSearchClient os, ICon
     private readonly IOpenSearchClient _os = os;
     private readonly string _logFilePath = cfg["BusinessCoach:LogFilePath"] ?? throw new ArgumentNullException("BusinessCoach:LogFilePath non configurato");
     private readonly string _index = cfg["BusinessCoach:IndexName"] ?? throw new ArgumentNullException("BusinessCoach:Index non configurato");
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        // I payload sono in camelCase; questa opzione rende il matching case-insensitive
+        PropertyNameCaseInsensitive = true
+    };
 
 
     // Metodo RunAsync del servizio
@@ -60,23 +66,41 @@ public partial class BusinessCoachLogIngestionService(IOpenSearchClient os, ICon
         string fileContent = File.ReadAllText(_logFilePath);
         var matches = BusinessCoachDocumentRegex().Matches(fileContent);
         var payloads = new List<BusinessCoachDocumentDto>();
+        int recordSkipped = 0;
+        int recordAdded = 0;
+        int recordProcessed = 0;
+        int recordError = 0;
         foreach (Match match in matches)
         {
             if (match.Groups.Count > 1)
+                recordProcessed++;
             {
                 string jsonPayload = match.Groups[1].Value;
+                // Ignoro i payload che non contengono il campo "serviceType"
+                if (!jsonPayload.Contains("\"serviceType\""))
+                {
+                    // Console.WriteLine("Payload ignorato perché non contiene il campo 'serviceType'.");
+                    recordSkipped++;
+                    continue;
+                }
                 try
                 {
-                    var dto = System.Text.Json.JsonSerializer.Deserialize<BusinessCoachDocumentDto>(jsonPayload);
+                    var dto = JsonSerializer.Deserialize<BusinessCoachDocumentDto>(jsonPayload, _jsonOptions);
                     if (dto != null)
                         payloads.Add(dto);
+                    recordAdded++;
                 }
-                catch (System.Text.Json.JsonException ex)
+                catch (JsonException ex)
                 {
                     Console.WriteLine($"Errore deserializzazione JSON: {ex.Message}");
+                    recordError++;
                 }
             }
         }
+        Console.WriteLine($"Totale record saltati (mancanza campo 'serviceType'): {recordSkipped}");
+        Console.WriteLine($"Totale record processati: {recordProcessed}");
+        Console.WriteLine($"Totale record aggiunti: {recordAdded}");
+        Console.WriteLine($"Totale record con errore di deserializzazione: {recordError}");
         return payloads;       
     }
 
@@ -90,14 +114,13 @@ public partial class BusinessCoachLogIngestionService(IOpenSearchClient os, ICon
             .Map<BusinessCoachDocumentDto>(m => m
                 .AutoMap()
                 .Properties(ps => ps
-                    .Nested<DetailDto>(n => n
-                        .Name(p => p.Details)
-                        .AutoMap()
-                    )
-                    .Nested<PaymentDetailDto>(n => n
-                        .Name(p => p.PaymentDetails)
-                        .AutoMap()
-                    )
+                    .Nested<RoomDto>(n => n.Name(p => p.Room).AutoMap())
+                    .Nested<OperatorDto>(n => n.Name(p => p.Operator).AutoMap())
+                    .Nested<DocumentTypeDto>(n => n.Name(p => p.DocumentType).AutoMap())
+                    .Nested<ShiftDto>(n => n.Name(p => p.Shift).AutoMap())
+                    .Nested<CashDeskDto>(n => n.Name(p => p.CashDesk).AutoMap())
+                    .Nested<DetailDto>(n => n.Name(p => p.Details).AutoMap())
+                    .Nested<PaymentDetailDto>(n => n.Name(p => p.PaymentDetails).AutoMap())
                 )
             ), ct);
 
